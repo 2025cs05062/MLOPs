@@ -74,12 +74,11 @@ MODELS = {
     "Logistic Regression": {
         "pipeline": Pipeline([
             ("scaler", StandardScaler()),
-            ("classifier", LogisticRegression(max_iter=1000, random_state=42))
+            ("classifier", LogisticRegression(max_iter=1000, random_state=42, l1_ratio=0))
         ]),
         "param_grid": {
             "classifier__C": [0.01, 0.1, 1, 10],
             "classifier__solver": ["lbfgs", "liblinear"],
-            "classifier__penalty": ["l2"],
         },
     },
     "Random Forest": {
