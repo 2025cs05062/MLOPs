@@ -20,11 +20,20 @@ Usage:
     python train.py
 """
 
+import os
+import warnings
+
+warnings.filterwarnings("ignore")
+os.environ["PYTHONWARNINGS"] = "ignore"
+
 import joblib
 import mlflow
 import mlflow.sklearn
 import pandas as pd
 from pathlib import Path
+
+import logging
+logging.getLogger("mlflow").setLevel(logging.ERROR)
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
