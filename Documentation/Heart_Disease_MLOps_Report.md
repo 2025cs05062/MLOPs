@@ -20,7 +20,8 @@
 10. [Monitoring & Logging](#10-monitoring--logging)
 11. [Architecture Diagram](#11-architecture-diagram)
 12. [Conclusion & Future Work](#12-conclusion--future-work)
-13. [References](#13-references)
+13. [Evidence Logs](#13-evidence-logs)
+14. [References](#14-references)
 
 ---
 
@@ -160,8 +161,17 @@ Cross-Validation Results (5-Fold Stratified):
 
 | Model               | CV Accuracy | CV Precision | CV Recall | CV ROC-AUC |
 |---------------------|-------------|--------------|-----------|------------|
-| Logistic Regression | ~0.85       | ~0.84        | ~0.87     | ~0.90      |
-| Random Forest       | ~0.83       | ~0.82        | ~0.85     | ~0.88      |
+| Logistic Regression | 0.8264      | 0.8439       | 0.7648    | 0.9004     |
+| Random Forest       | 0.8139      | 0.8295       | 0.7557    | 0.8837     |
+
+Hold-out Test Set Results:
+
+| Model               | Test ROC-AUC | Test Accuracy | Test F1-Score |
+|---------------------|--------------|---------------|---------------|
+| Logistic Regression | 0.9578       | 0.87          | 0.87          |
+| Random Forest       | 0.9551       | 0.90          | 0.90          |
+
+**Full training output:** See `screenshots/model_training.log`
 
 Generated evaluation artifacts:
 
@@ -177,6 +187,9 @@ Generated evaluation artifacts:
 **Logistic Regression** was selected as the best model based on the highest mean CV ROC-AUC score (~0.90). Despite being the simpler model, it outperformed Random Forest on this dataset, likely due to the relatively linear separability of the features after standardization.
 
 **Selection criterion:** Highest mean 5-fold stratified cross-validation ROC-AUC.
+
+**Best hyperparameters (Logistic Regression):** C = 0.1, solver = liblinear
+**Best hyperparameters (Random Forest):** n_estimators = 200, max_depth = None, min_samples_split = 2
 
 ---
 
@@ -240,6 +253,15 @@ A clean inference module (`src/models/inference.py`) provides the `HeartDiseaseP
 - Handles preprocessing (scaling) and prediction in a single call
 - Returns prediction (0/1), prediction label, confidence score, and risk level
 - Supports both single and batch predictions
+
+**Verified inference output** (see `screenshots/Inference.log`):
+
+```
+Input: {'age': 55, 'sex': 1, 'cp': 2, 'trestbps': 130, 'chol': 250, ...}
+Prediction: No Heart Disease
+Confidence: 0.1651
+Risk Level: Low Risk
+```
 
 ### 6.3 Reproducibility
 
@@ -387,7 +409,19 @@ The `/predict` endpoint:
 }
 ```
 
-### 8.3 Flask UI
+### 8.3 Docker Build & Run Verification
+
+Docker build and container run were verified end-to-end (see `screenshots/docker_build.log` and `screenshots/docker_status.log`):
+
+```
+$ curl http://localhost:8000/health
+{"status":"healthy","pipeline_loaded":true,"timestamp":"2026-05-06T05:11:06.865354"}
+
+$ curl -X POST http://localhost:8000/predict ...
+{"prediction":0,"prediction_label":"No Heart Disease","confidence":0.1651,"risk_level":"Low Risk",...}
+```
+
+### 8.4 Flask UI
 
 A browser-based Flask UI (`src/api/app.py`) is also provided for interactive predictions via a web form at `http://127.0.0.1:5000`.
 
@@ -417,16 +451,33 @@ docker compose up -d --build
 
 ### 9.2 Kubernetes Deployment (Minikube)
 
-Production-ready Kubernetes manifests are provided for enterprise deployment:
+Production-ready Kubernetes manifests are provided for enterprise deployment (see `screenshots/k8s_minikube.log` for full verified output):
 
 **deployment.yaml:**
 - 2 replicas with rolling update strategy
 
+**Verified K8s deployment output:**
+
+```
+NAME                                     READY   STATUS    RESTARTS   AGE
+pod/heart-disease-api-7b5bc5b856-jbgtl   1/1     Running   0          23s
+pod/heart-disease-api-7b5bc5b856-rfzq6   1/1     Running   0          23s
+
 NAME                                TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)
-service/heart-disease-api-service   LoadBalancer   10.105.51.75   <pending>     80:31725/TCP
+service/heart-disease-api-service   LoadBalancer   10.97.67.188   <pending>     80:31736/TCP
 
 NAME                                READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/heart-disease-api   2/2     2            2           20s
+deployment.apps/heart-disease-api   2/2     2            2           23s
+```
+
+**K8s endpoint verification:**
+
+```
+$ curl http://127.0.0.1:63979/health
+{"status":"healthy","pipeline_loaded":true,"timestamp":"2026-05-06T05:16:49.516011"}
+
+$ curl -X POST http://127.0.0.1:63979/predict ...
+{"prediction":0,"prediction_label":"No Heart Disease","confidence":0.1651,"risk_level":"Low Risk",...}
 ```
 
 ---
@@ -563,7 +614,24 @@ This project successfully demonstrates a complete MLOps pipeline for heart disea
 
 ---
 
-## 13. References
+## 13. Evidence Logs
+
+All execution evidence is captured in `screenshots/` for reproducibility and audit:
+
+| Log File | Description |
+|----------|-------------|
+| `screenshots/model_training.log` | Full model training output including GridSearchCV results, CV metrics, hold-out test evaluation, and model selection decision |
+| `screenshots/Inference.log` | Inference test output showing prediction result, confidence score, and risk level |
+| `screenshots/docker_build.log` | Docker image build log and container run with API request/response logs |
+| `screenshots/docker_status.log` | Docker container health check and prediction endpoint verification |
+| `screenshots/k8s_minikube.log` | Full Kubernetes deployment log: minikube start, image load, kubectl apply, pod/service status, and endpoint tests |
+| `screenshots/test_results.txt` | Pytest unit test results (24/24 passed) |
+| `screenshots/deployment_docker_compose.txt` | Docker Compose deployment verification |
+| `screenshots/deployment_k8s.txt` | Kubernetes deployment verification |
+
+---
+
+## 14. References
 
 | Resource | Link |
 |----------|------|

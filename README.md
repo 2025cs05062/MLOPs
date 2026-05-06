@@ -53,7 +53,20 @@ Assignment/
 │   ├── prometheus-config.yaml
 │   ├── prometheus-deployment.yaml
 │   └── grafana-deployment.yaml
+├── monitoring/                  # Docker Compose monitoring configs
+│   ├── prometheus.yml
+│   └── grafana/
+│       ├── dashboards/dashboard.json
+│       └── provisioning/
+├── screenshots/                 # Evidence: images & execution logs
+│   ├── *.png                    # EDA plots, confusion matrices, ROC curves, API screenshots
+│   ├── model_training.log       # Model training output
+│   ├── Inference.log            # Inference test output
+│   ├── docker_build.log         # Docker build & run output
+│   ├── docker_status.log        # Docker container health/predict verification
+│   └── k8s_minikube.log         # Kubernetes deployment & endpoint tests
 ├── Dockerfile
+├── docker-compose.yml
 ├── requirements.txt
 └── README.md
 ```
@@ -369,6 +382,18 @@ A pre-provisioned dashboard **"Heart Disease API Monitoring"** is auto-loaded wi
 
 - Structured logs to `api.log` and stdout
 - Request/response logging with timestamps
+
+### Evidence Logs
+
+Execution logs capturing verified outputs are saved in `screenshots/`:
+
+| Log File | Description |
+|----------|-------------|
+| `model_training.log` | Full model training output with CV results and model selection |
+| `Inference.log` | Inference test showing prediction, confidence, and risk level |
+| `docker_build.log` | Docker image build and container run with API request logs |
+| `docker_status.log` | Docker container health check and prediction verification |
+| `k8s_minikube.log` | Minikube start, kubectl apply, pod status, and endpoint tests |
 
 ### Cleanup
 
