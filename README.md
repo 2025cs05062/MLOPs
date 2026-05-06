@@ -49,7 +49,10 @@ Assignment/
 │   └── test_api.py
 ├── k8s/                         # Kubernetes manifests
 │   ├── deployment.yaml
-│   └── service.yaml
+│   ├── service.yaml
+│   ├── prometheus-config.yaml
+│   ├── prometheus-deployment.yaml
+│   └── grafana-deployment.yaml
 ├── Dockerfile
 ├── requirements.txt
 └── README.md
@@ -122,7 +125,7 @@ uvicorn src.api.model_app:app --reload
 
 ```bash
 python src/api/app.py
-# Open http://127.0.0.1:5000
+# Open http://127.0.0.1:5001
 ```
 
 ### 7. Docker
@@ -225,17 +228,27 @@ curl http://127.0.0.1:<PORT>/metrics
 open http://127.0.0.1:<PORT>/docs
 ```
 
-**Step 9 — Deploy Prometheus on Kubernetes (optional):**
+**Step 9 — Deploy Prometheus & Grafana on Kubernetes (optional):**
 
 ```bash
 kubectl apply -f k8s/prometheus-config.yaml
 kubectl apply -f k8s/prometheus-deployment.yaml
+kubectl apply -f k8s/grafana-deployment.yaml
+kubectl rollout status deployment/prometheus --timeout=120s
+kubectl rollout status deployment/grafana --timeout=120s
 minikube service prometheus-service
+minikube service grafana-service
 ```
+
+| Service | Access | Credentials |
+|---------|--------|-------------|
+| **Prometheus** | `minikube service prometheus-service` | — |
+| **Grafana** | `minikube service grafana-service` | admin / admin |
 
 **Cleanup:**
 
 ```bash
+kubectl delete -f k8s/grafana-deployment.yaml
 kubectl delete -f k8s/prometheus-deployment.yaml
 kubectl delete -f k8s/prometheus-config.yaml
 kubectl delete -f k8s/service.yaml
@@ -249,6 +262,7 @@ minikube stop
 - **`k8s/service.yaml`** — LoadBalancer Service mapping port 80 → container port 8000
 - **`k8s/prometheus-config.yaml`** — ConfigMap with Prometheus config targeting K8s service DNS (`heart-disease-api-service:80`)
 - **`k8s/prometheus-deployment.yaml`** — Prometheus Deployment + NodePort Service for K8s monitoring
+- **`k8s/grafana-deployment.yaml`** — Grafana Deployment + NodePort Service with pre-provisioned Prometheus datasource and Heart Disease API dashboard (ConfigMaps for datasource, dashboard provider, and dashboard JSON)
 
 ## Model Details
 
@@ -321,6 +335,20 @@ This starts three services:
 | **Heart Disease API** | http://localhost:8000 | — |
 | **Prometheus** | http://localhost:9090 | — |
 | **Grafana** | http://localhost:3000 | admin / admin |
+
+### Kubernetes Monitoring Stack
+
+Prometheus and Grafana can also be deployed on Kubernetes alongside the API:
+
+```bash
+kubectl apply -f k8s/prometheus-config.yaml
+kubectl apply -f k8s/prometheus-deployment.yaml
+kubectl apply -f k8s/grafana-deployment.yaml
+minikube service prometheus-service
+minikube service grafana-service
+```
+
+Grafana is pre-configured with the Prometheus datasource (`http://prometheus-service:9090`) and the Heart Disease API dashboard auto-loaded.
 
 ### Grafana Dashboard
 

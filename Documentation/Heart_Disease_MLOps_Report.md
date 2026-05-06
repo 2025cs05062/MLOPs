@@ -463,10 +463,12 @@ Prometheus scrape configuration:
 - Deployed as a ConfigMap + Deployment + NodePort Service
 
 ```bash
-# Deploy Prometheus on Kubernetes
+# Deploy Prometheus and Grafana on Kubernetes
 kubectl apply -f k8s/prometheus-config.yaml
 kubectl apply -f k8s/prometheus-deployment.yaml
+kubectl apply -f k8s/grafana-deployment.yaml
 minikube service prometheus-service
+minikube service grafana-service
 ```
 
 ### 10.3 Grafana Dashboard
@@ -478,7 +480,24 @@ A pre-provisioned Grafana dashboard ("Heart Disease API Monitoring") is auto-loa
 - HTTP request rate by method/endpoint/status
 - Average prediction latency over time
 
-**Grafana access:** http://localhost:3000 (Credentials: admin / admin)
+**Docker Compose:** http://localhost:3000 (Credentials: admin / admin)
+
+**Kubernetes:** `minikube service grafana-service` (Credentials: admin / admin)
+
+### 10.4 Kubernetes Monitoring Stack
+
+The full monitoring stack (Prometheus + Grafana) is deployable on Kubernetes via dedicated manifests in `k8s/`:
+
+| Manifest | Description |
+|----------|-------------|
+| `k8s/prometheus-config.yaml` | ConfigMap with Prometheus scrape config targeting `heart-disease-api-service:80` |
+| `k8s/prometheus-deployment.yaml` | Prometheus Deployment + NodePort Service (port 9090) |
+| `k8s/grafana-deployment.yaml` | Grafana Deployment + NodePort Service (port 3000) with ConfigMaps for datasource, dashboard provider, and dashboard JSON |
+
+Grafana on Kubernetes is pre-configured with:
+- **Datasource:** Prometheus at `http://prometheus-service:9090` (K8s service DNS)
+- **Dashboard:** "Heart Disease API Monitoring" auto-provisioned from ConfigMap
+- **Environment:** admin/admin credentials, sign-up disabled
 
 ---
 
@@ -507,7 +526,7 @@ A pre-provisioned Grafana dashboard ("Heart Disease API Monitoring") is auto-loa
 3. **Inference Layer:** `src/models/inference.py` (HeartDiseasePredictor class)
 4. **API Layer:** `src/api/model_app.py` (FastAPI) + `src/api/app.py` (Flask UI)
 5. **CI/CD Layer:** `.github/workflows/ci.yml` (Lint → Test → Train → Docker)
-6. **Deployment Layer:** Docker Compose (API + Prometheus + Grafana) / Kubernetes (Minikube)
+6. **Deployment Layer:** Docker Compose (API + Prometheus + Grafana) / Kubernetes (Minikube with API + Prometheus + Grafana)
 7. **Monitoring Layer:** Prometheus metrics + Grafana dashboards + application logging
 
 ---
