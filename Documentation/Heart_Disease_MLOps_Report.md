@@ -1,8 +1,8 @@
 # Heart Disease Prediction — MLOps Assignment Report
 
-**Student ID:** Ambika Prasad Tripathy(2025cs05014)
+**Student ID:** Gurleen Kaur(2025cs05062)
 **Course:** MLOps — M.Tech Semester 2, BIT Mesra
-**GitHub Repository:** [https://github.com/2025cs05014/MLOPs](https://github.com/2025cs05014/MLOPs)
+**GitHub Repository:** [https://github.com/2025cs05062/MLOPs]
 
 ---
 
@@ -74,7 +74,7 @@ The Heart Disease UCI dataset contains 303 patient records with 14 features:
 
 | Step | Command / Action |
 |------|-----------------|
-| Step 1: Clone the repository | `git clone git@github-bits:2025cs05014/MLOPs.git` <br> `cd Assignment` |
+| Step 1: Clone the repository | `git clone git@github-bits:2025cs05062/MLOPs.git` <br> `cd Assignment` |
 | Step 2: Create and activate virtual environment | `python3 -m venv .venv` <br> `source .venv/bin/activate` |
 | Step 3: Install dependencies | `pip install -r requirements.txt` |
 | Step 4: Run EDA | `jupyter notebook notebooks/EDA.ipynb` |
@@ -436,15 +436,13 @@ The full application stack is deployed using Docker Compose (`docker-compose.yml
 | Service            | URL                    | Description               |
 |--------------------|------------------------|---------------------------|
 | Heart Disease API  | http://localhost:8000   | FastAPI prediction server |
-| Prometheus         | http://localhost:9090   | Metrics collection        |
-| Grafana            | http://localhost:3000   | Dashboard (admin/admin)   |
 
 ```bash
 docker compose up -d --build
 ```
 
 **Verified deployment output:**
-- All 3 containers running (heart-disease-api, prometheus, grafana)
+- All 3 containers running (heart-disease-api)
 - Health check: `{"status": "healthy", "pipeline_loaded": true}`
 - Prediction working correctly
 - Prometheus target status: `"health": "up"`
@@ -473,10 +471,10 @@ deployment.apps/heart-disease-api   2/2     2            2           23s
 **K8s endpoint verification:**
 
 ```
-$ curl http://127.0.0.1:63979/health
+$ curl http://127.0.0.1:53462/health
 {"status":"healthy","pipeline_loaded":true,"timestamp":"2026-05-06T05:16:49.516011"}
 
-$ curl -X POST http://127.0.0.1:63979/predict ...
+$ curl -X POST http://127.0.0.1:53462/predict ...
 {"prediction":0,"prediction_label":"No Heart Disease","confidence":0.1651,"risk_level":"Low Risk",...}
 ```
 
@@ -556,17 +554,17 @@ Grafana on Kubernetes is pre-configured with:
 
 ```
 ┌─────────────┐     ┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│  Data (CSV)  │────▶│  Preprocess   │────▶│  Train + MLflow  │────▶│  Model (.pkl) │
+│  Data (CSV) │────▶│  Preprocess  │────▶│  Train + MLflow │────▶│  Model (.pkl)│
 └─────────────┘     └──────────────┘     └─────────────────┘     └──────┬───────┘
                                                                         │
                     ┌──────────────┐     ┌─────────────────┐           │
-                    │   Prometheus  │◀────│  FastAPI + Docker │◀──────────┘
-                    │   /metrics    │     │  /predict        │
+                    │   Prometheus │◀────│FastAPI + Docker │◀──────────┘
+                    │   /metrics   │     │ /predict        │
                     └──────┬───────┘     └────────┬────────┘
                            │                      │
                     ┌──────▼───────┐     ┌────────▼────────┐
-                    │   Grafana     │     │  Kubernetes (K8s)│
-                    │   Dashboard   │     │  LoadBalancer     │
+                    │   Grafana    │     │ Kubernetes (K8s)│
+                    │   Dashboard  │     │ LoadBalancer    │
                     └──────────────┘     └─────────────────┘
 ```
 
@@ -644,4 +642,4 @@ All execution evidence is captured in `screenshots/` for reproducibility and aud
 | GitHub Actions Documentation | https://docs.github.com/en/actions |
 | Prometheus Client Python | https://github.com/prometheus/client_python |
 | Grafana Documentation | https://grafana.com/docs/ |
-| GitHub Repository | https://github.com/2025cs05014/MLOPs |
+| GitHub Repository | https://github.com/2025cs05062/MLOPs |
